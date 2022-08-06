@@ -1,0 +1,461 @@
+@charset "utf-8";
+
+html {
+    /*ブラウザ機能によるダブルタップズームを抑止*/
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+}
+html,body{
+    height: 100%;
+}
+body{
+    background-color: #727272;
+    margin: 0;
+    font-family: Verdana, Arial, "メイリオ","ヒラギノ角ゴ Pro W3", "Osaka", "ＭＳ Ｐゴシック", sans-serif,'g_icon';
+}
+img{
+    border: none;
+    backface-visibility: hidden; /*chromeでの画像にじみ防止*/
+}
+
+/***スライダー土台**********************************************/
+.slider{
+    background-color: #727272;
+    padding-top: 30px; /*メニュー分*/
+    height: 100%;
+    display: none;
+    transition: display .3s linear;
+}
+.slider.slick-initialized{
+    display: block;
+}
+
+/***メイン画像部分**********************************************/
+.slider div{
+    height: 100%;
+}
+.slick-slide:focus {
+    outline: none;
+}
+.slick-slide .c_i>div{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+.slick-slide:nth-child(odd) .c_i>div{
+    justify-content: flex-end;
+}
+.slick-slide .c_i img{
+    max-width:100%;
+    max-height:100%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.slider div .last_page_in{
+    line-height: 1;
+    margin: 0 10%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.slider div .last_page_in div{
+    height: auto;
+}
+.slider div .last_page_in img{
+    max-width: 100%;
+    height: auto;
+}
+.slider div .last_page_in p{
+    margin: 0 0 0.7em;
+}
+
+@media (max-width:768px) {/*指定幅以下になった時*/
+    .slick-slide .c_i>div,.slick-slide:nth-child(odd) .c_i>div{
+        justify-content: center;
+    }
+    .slider div .last_page_in{
+        margin: 0 2%;
+    }
+}
+
+/***Dots**********************************************/
+.slick-dots{
+    padding: 0;
+    margin: 0 auto;
+    list-style: none;
+    display: flex;
+    width: 98%;
+    height: 14px;
+    border-radius: 25px;
+    overflow: hidden;
+}
+.slick-dots li{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+.slick-dots li button{
+    font-size: 0;
+    line-height: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    cursor: pointer;
+    color: transparent;
+    border: 0;
+    outline: none;
+    background: #555555;
+    transition: .1s;
+}
+.slick-dots li button:hover,
+.slick-dots li button:focus{
+    outline: none;
+    background: #fff;
+}
+.slick-dots li.slick-active button{
+    background: #ccc;
+}
+
+/***矢印**********************************************/
+.slide-arrow{
+    opacity: 0;
+    z-index: 1;
+    height: 100%;
+    line-height: 100vh;
+    width: 25%;
+    position: absolute;
+    top: 0;
+    cursor: pointer;
+    font-size: 3em;
+    box-sizing: border-box;
+}
+.slide-arrow.hover{
+    opacity: 1;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.7);
+}
+.next-arrow{
+    text-align: left;
+    padding-left: 30px;
+    left: 0;
+}
+.next-arrow span::before{
+    content: '\e902';
+}
+.prev-arrow{
+    text-align: right;
+    padding-right: 30px;
+    right: 0;
+}
+.prev-arrow span::before{
+    content: '\e903';
+}
+.slide-arrow.slick-disabled{
+    display: none;
+}
+@media (max-width:768px) {/*指定幅以下になった時*/
+    .slide-arrow{
+        width: 15%;
+        font-size: 2em;
+    }
+    .next-arrow,.prev-arrow{
+        padding: 0;
+        text-align: center;
+    }
+}
+
+/***タイトル・コピーライト**********************************************/
+h1{
+    font-size: 1.9em;
+    font-weight:bold;
+    line-height: 1.2em;
+}
+small{
+    font-size: 0.8em;
+    display: block;
+    margin-bottom: 16px;
+}
+
+/***ボタン**********************************************/
+.button{
+    -webkit-appearance: none;
+    margin: 0 2px;
+    width: 120px;
+	background-color: #000;
+	border: 2px solid #888;
+	color: #CCC;
+    font-size: 0.875em;
+    line-height: 1.5;
+	display: inline-block;
+	text-align: center;
+	text-decoration: none;
+	outline: none;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all .3s;
+    box-sizing: border-box;
+    padding: 4px 0;
+}
+@media (min-width:769px) {/*指定幅以上の時*/
+    .button:hover{
+        background-color: #fff;
+        border-color: #59b1eb;
+        color: #59b1eb;
+    }
+    .button.orange:hover{
+        background-color: #fff;
+        border-color: #eb9359;
+        color: #eb9359;
+    }
+}
+@media all and (-ms-high-contrast: none){/*IEの時*/
+    .g_button{display: none;}
+}
+
+/***メニュー**********************************************/
+.menu_box{
+    color: #ccc;
+    background-color: rgba(0,0,0,0.9);
+    z-index: 2;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    text-align: center;
+}
+.menu_show{
+    display: none;
+    margin-bottom: 4px;
+}
+/*メニュー・クローズ*/
+.menu_button{
+    display: block;
+    height: 30px; /*メニューの高さ*/
+    line-height: 28px;
+    width: 100%;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .1s;
+    color: #ccc; /*メニューボタン文字カラー*/
+}
+.menu_button::before{
+    vertical-align: middle;
+    display: inline-block;
+    content: '\e900';
+    font-weight: normal;
+    padding: 0 4px;
+}
+.close{
+    color: #ccc;
+    cursor: pointer;
+    transition: .1s;
+}
+.close::before{
+    content: '\e901';
+}
+/*メニュー内スタイル*/
+.menu_box h1{
+    color: #f0f0f0;
+}
+.slick-counter{
+    margin: 22px 0 8px;
+}
+.dots{
+    margin: 0 0 16px;
+}
+
+@media (max-width:768px) {/*指定幅以下になった時*/
+    h1{
+        font-size: 1.6em;
+    }
+    /*メニュー内ボタン縦並び*/
+    .menu_box .button{
+        display: block;
+        margin: 10px auto;
+    }
+}
+/***メニュータップ範囲拡大用（スマホ時生成）**********************************************/
+.menu_sizeup{
+    width: 100%;
+    height: 50px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+/***ガイド**********************************************/
+.guide{
+    z-index: 100;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+    cursor: pointer;
+    background-color: rgba(0,0,0,0.6);
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.6);
+}
+.guide::after{
+    box-sizing: border-box;
+    line-height: 1;
+    padding: 8px;
+    font-size: 2em;
+    content: "\e901";
+    color: #fff;
+    text-shadow: none;
+    display: block;
+    background-color: #be0000;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
+}
+.guide_yazirusi{
+    margin-top: 32px;
+}
+.guide_yazirusi .icon::before{
+    font-size: 5em;
+    content: '\e904';
+}
+.guide_yazirusi .text::before{
+    padding-top: 20px;
+    content: 'メニューバー';
+    font-weight: bold;
+}
+.guide_operation{
+    font-weight: bold;
+    text-align: center;
+    width: 70%;
+    overflow: hidden;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+.guide_operation img{
+    max-width: 100%;
+    height: auto;
+}
+.guide .slide-arrow,.guide .slide-arrow.hover{
+    opacity: 1;
+}
+
+/***ヘルプ**********************************************/
+.help{
+    display: none;
+    background-color: rgba(0,0,0,0.9);
+    z-index: 100;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+    cursor: pointer;
+}
+.help_in{
+    width: 80%;
+    border: 3px solid #be0000;
+    color: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    box-sizing: border-box;
+}
+.help_in p{
+    margin-bottom: 0;
+    margin-top: 4px;
+}
+.help_in p:nth-of-type(1){
+    margin-top: 16px;
+}
+.help_in ul{
+    display: inline-block;
+    text-align: left;
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 8px;
+}
+.help_in li{
+    margin-bottom: 4px;
+}
+.help_in li:last-child{
+    margin-bottom: 0;
+}
+.help_img{
+    margin-top: 20px;
+    text-align: center;
+}
+.help_img img{
+    max-width: 100%;
+}
+.help::after{
+    box-sizing: border-box;
+    line-height: 1;
+    padding: 8px;
+    font-size: 2em;
+    content: "\e901";
+    color: #fff;
+    display: block;
+    background-color: #be0000;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 100;
+}
+@media (max-width:768px) {/*指定幅以下になった時*/
+    .help_in span{
+        display: block;
+        padding-left: 1em;
+    }
+    .help_in li{
+        margin-bottom: 8px;
+    }
+}
+
+/***拡大モード**********************************************/
+.slider.zoom{
+    width: 100vw;
+    transform: scale(1.5);
+    transform-origin: 0 0;
+}
+.zoomwrap{
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20;
+    -webkit-overflow-style:move;
+}
+.zoom_reset{
+    display: none;
+    width: 100%;
+    cursor: pointer;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 21;
+}
+.zoom_reset .zr_in{
+    background-color: #be0000;
+    height: 30px;
+    line-height: 30px;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    box-sizing: border-box;
+}
+@media (max-width:768px) {/*指定幅以下になった時*/
+    .zoom_reset{
+        height: 50px; /*タップ範囲拡大用*/
+    }
+}
