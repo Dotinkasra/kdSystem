@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    waifu2x
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>
+            ファイルをアップロード
+        </h1>
+        <div class="mb-3">
+            <form method = post enctype = multipart/form-data>
+                    <input class="form-control" type="file" id="formFile" name = file>
+                    <button type = submit value = Upload class="btn btn-danger mb-3" id="send">送信</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+    </script>
+{% endblock %}
+
+
+
+

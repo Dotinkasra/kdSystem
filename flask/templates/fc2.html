@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    FC2 Play
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    {% for v in video %}
+      <video width="640" height="480" controls preload="auto" playsinline src="{{ url_for('static', filename='movies/' + v) }}"></video>
+    {% endfor %}
+  </div>
+{% endblock %}
+

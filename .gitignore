@@ -1,0 +1,8 @@
+test/*
+*.db
+flask/static/images
+flask/static/movies
+flask/static/waifu2x
+flask/modules/realesrgan-ncnn-vulkan
+.DS_Store
+*.pyc

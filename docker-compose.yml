@@ -1,0 +1,20 @@
+version: "3.7"
+services:
+  flask:
+    container_name: kdSystem_flask_test
+    restart: always
+    tty: true
+    platform: linux/amd64
+    extra_hosts:
+      - "archive.ubuntu.com:133.24.248.16"
+    build:
+      context: ./flask
+      dockerfile: Dockerfile
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./:/api
+      - /Volumes/VC_Media2/アニマルビデオ/漫画/folders:/api/flask/static/images
+      - /Volumes/VC_Media2/動画/fc2:/api/flask/static/movies
+
+    #command: ["python3", "./flask/main.py"]
