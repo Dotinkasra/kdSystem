@@ -19,6 +19,16 @@ def manga():
     manga = [m for m in am.fetch()]
     return render_template('mangaList.html', manga = manga)
 
+@app.route('/manga/search', methods = ['GET'])
+def manga_search():
+    word = request.args.get('word')
+    if word is None or len(word) == 0 or not word:
+        print("false")
+        return redirect(url_for('manga'))
+    am = AccessManga()
+    manga = [m for m in am.search(word)]
+    return render_template('mangaList.html', manga = manga)
+
 @app.route('/manga/<string:name>', methods = ['POST'])
 def manga_contents(name):
     title = request.form.get('title')
@@ -37,6 +47,16 @@ def manga_contents(name):
 def fc2():
     fc2 = AccessFc2()
     movie = [m for m in fc2.fetch()]
+    return render_template('fc2List.html', movie = movie)
+
+@app.route('/fc2/search', methods = ['GET'])
+def fc2_search():
+    word = request.args.get('word')
+    if word is None or len(word) == 0 or not word:
+        print("false")
+        return redirect(url_for('fc2'))
+    fc2 = AccessFc2()
+    movie = [f for f in fc2.search(word)]
     return render_template('fc2List.html', movie = movie)
 
 @app.route('/fc2/<string:id>', methods = ['POST'])
