@@ -5,31 +5,38 @@
 {% endblock %}
 
 {% block content %}
+    <div class="wrapper">
+        <div class="search-area">
+            <form action="/fc2/search" method = "GET">
+                <input type="text" id="search-text" placeholder="検索ワードを入力" name="word">
+                <button type="submit" >検索</button>
+            </form>
+        </div>
 
-    <table class="table">
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">タイトル</th>
-                <th scope="col">星</th>
-              </tr>
-        </thead>
-        <tbody class="target-area">
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">タイトル</th>
+                    <th scope="col">星</th>
+                </tr>
+            </thead>
+            <tbody class="target-area">
 
-            {% for i in movie %}
-            <tr>
-                <th scope="row">
-                    <form action="{{ url_for('fc2_contents', id = i[0]) }}" method = "POST">
-                        <button class="btn btn-outline-danger" type="submit" name="title" value="{{ i[1] }}">{{ i[2] }}</button>
-                    </form>
-                </th>
-                <td>
-                    ★1
-                </td>
-            </tr>
-            {% endfor %}
-            
-          </tbody>
-    </table>
-
+                {% for i in movie %}
+                <tr>
+                    <th scope="row">
+                        <form action="{{ url_for('fc2_contents', id = i[0]) }}" method = "POST">
+                            <button class="btn btn-outline-danger" type="submit" name="title" value="{{ i[1] }}">{{ i[2] }}</button>
+                        </form>
+                    </th>
+                    <td>
+                        ★1
+                    </td>
+                </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
 
