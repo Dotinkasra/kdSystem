@@ -18,9 +18,11 @@ class AccessFc2():
         self.close()
         return result
 
-    def search(self, keyword):
+    def search(self, keyword: str) -> list:
+        if not keyword:
+            return []
         self.connect()
-        self.cur.execute("SELECT * FROM fc2 WHERE name LIKE '%?%'", (keyword,))
+        self.cur.execute("SELECT * FROM fc2 WHERE ifnull(name,'') || ifnull(title,'') LIKE ?", ('%' + keyword + '%',))
         result = self.cur.fetchall()
         self.close()
         return result
