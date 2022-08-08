@@ -29,7 +29,7 @@
                 {% for i in manga %}
                 <tr>
                     <th scope="row">
-                        <form action="{{ url_for('manga_contents', name = i[0]) }}" method = "POST">
+                        <form action="{{ url_for('manga.manga_contents', name = i[0]) }}" method = "POST">
                             <button class="btn btn-outline-primary" type="submit" name="title" value="{{ i[1] }}">{{ i[1] }}</button>
                         </form>
                     </th>

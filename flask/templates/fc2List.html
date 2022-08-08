@@ -25,7 +25,7 @@
                 {% for i in movie %}
                 <tr>
                     <th scope="row">
-                        <form action="{{ url_for('fc2_contents', id = i[0]) }}" method = "POST">
+                        <form action="{{ url_for('fc2.fc2_contents', id = i[0]) }}" method = "POST">
                             <button class="btn btn-outline-danger" type="submit" name="title" value="{{ i[1] }}">{{ i[2] }}</button>
                         </form>
                     </th>
