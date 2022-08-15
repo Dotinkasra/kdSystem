@@ -6,3 +6,5 @@ flask/static/waifu2x
 flask/modules/realesrgan-ncnn-vulkan
 .DS_Store
 *.pyc
+*.png
+*.wav
