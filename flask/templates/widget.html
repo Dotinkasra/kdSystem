@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    </head>
+    <body>
+        <div id="main"></div>
+        <script>
+            var audio;
+            var default_img;
+            var name;
+            axios.get('/api/widget')
+            .then(function(response) {
+                console.log(response.data['img']);
+                default_img = response.data['img']
+                $("#main").append('<img style="width: auto; height: 100%" src="' + default_img + '">')
+                name = response.data['name']
+                audio = new Audio(response.data['sound'])
+                audio.load()
+                audio.currentTime = 0;
+                audio.play();
+            })
+            .catch(function(error) {
+                console.log('ERROR!! occurred in Backend.')
+            });
+
+            $("#main").on("click", function(){
+                axios.post('/api/widget/click', {name: name})
+                .then(function(response){
+                    if (audio != null) {
+                        audio.pause()
+                    }
+                    $("#main").children('img').attr('src', response.data['img'])
+                    audio = new Audio(response.data['sound']);
+                    audio.addEventListener("ended", function() {
+                        $("#main").children('img').attr('src', default_img)
+                    })
+                    audio.load()
+                    audio.currentTime = 0;
+                    audio.play();
+                })
+            })
+
+        </script>
+    </body>
+</html>

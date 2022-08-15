@@ -12,6 +12,23 @@
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/js/jquery.tablesorter.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/css/theme.default.min.css">
+    
+    <style>
+      #frame
+      {
+        position: fixed;
+        bottom: 10px; 
+        left: 80%;
+        padding: 6px 40px;
+        width: 50%;
+        height: 50%;
+      }
+      #widget
+      {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
     {% block head %}{% endblock %}
 
     <title>{% block title %}{% endblock %}</title>
@@ -71,6 +88,10 @@
       </nav>
     {% block content %}{% endblock %}
 
+    <div id="frame">
+      <iframe id="widget" src="{{ url_for('widget') }}" scrolling="no"></iframe>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
 </body>
 </html>
