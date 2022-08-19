@@ -13,19 +13,22 @@ import tkinter
 class ImagesWatchHandler(RegexMatchingEventHandler):
     def __init__(self, regexes, filename) -> None:
         super().__init__(regexes= regexes)
+        print("起動しました")
 
     def on_created(self, event):
         if not event.is_directory:
             return 
         filepath = event.src_path
         filename.set(os.path.basename(filepath))
+        send['state'] = tkinter.NORMAL
 
     def on_moved(self, event):
         if not event.is_directory:
             return
         filepath = event.src_path
-        old_filename = os.path.basename(filepath)
-        new_filename = os.path.basename(event.dest_path)
+        #old_filename = os.path.basename(filepath)
+        filename.set(os.path.basename(event.dest_path))
+        send['state'] = tkinter.NORMAL
 
 class DatabaseManager():
     def __init__(self) -> None:
@@ -60,6 +63,7 @@ class CheckLogg(tkinter.Checkbutton):
 
     def switch_logging(self):           #クリック時に実行
         if self.var.get():  #ONの場合
+            send['state'] = tkinter.NORMAL
             self.observer = Observer()  #Observerオブジェクト生成
             self.observer.schedule(     #スレッド作成
                 self.event_handler,
@@ -109,7 +113,8 @@ class SendButton(tkinter.Button):
         )
 
         BasicModules.reset_textbox(i_artists, i_series, i_original)
-        s.configure(textvariable = "Text")
+        filename.set('')
+        
 class BasicModules():
     @classmethod
     def reset_textbox(self, *args):
