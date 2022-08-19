@@ -16,7 +16,7 @@ def manga_search():
     word = request.args.get('word')
     if word is None or len(word) == 0 or not word:
         print("false")
-        return redirect(url_for('manga'))
+        return redirect(url_for('manga.manag_route'))
     am = AccessManga()
     manga = [m for m in am.search(word)]
     return render_template('mangaList.html', manga = manga)
