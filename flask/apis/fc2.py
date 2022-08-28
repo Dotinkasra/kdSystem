@@ -1,34 +1,72 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, abort
 from modules.access_fc2 import AccessFc2
 import pathlib
+from modules.module import BasicModules
 
 fc2 = Blueprint('fc2', __name__, url_prefix='/fc2')
 
 @fc2.route('/')
 def fc2_route():
     fc2 = AccessFc2()
-    movie = [m for m in fc2.fetch()]
-    return render_template('fc2List.html', movie = movie)
+    return render_template('fc2List.html', movie = fc2.fetch())
+
+
+def get_fc2_search(word: str):
+    if BasicModules.is_empty_or_null(word):
+        print("false")
+        return None
+    fc2 = AccessFc2()
+    return fc2.search(word)
 
 @fc2.route('/search', methods = ['GET'])
 def fc2_search():
-    word = request.args.get('word')
-    if word is None or len(word) == 0 or not word:
+    result: list = get_fc2_search(request.args.get('word'))
+    if result is None:
+        return redirect(url_for('fc2.fc2_route'))
+    return render_template('fc2List.html', movie = result)
+
+@fc2.route('/api/search', methods = ['POST'])
+def fc2_search_api():
+    result: list = get_fc2_search(request.form.get('word'))
+    if result is None:
+        return abort(400, 'Parameters: word \n Message: No keywords.')
+    
+    res_data: list = []
+    for r in result:
+        res_data.append(
+            {
+                'id': r[0],
+                'name': r[1],
+                'title': r[2],
+                'rate': r[3]
+            }
+        )
+    return jsonify({'result': res_data})
+
+
+def post_fc2_contents(id: str):
+    if BasicModules.is_empty_or_null(id):
         print("false")
-        return redirect(url_for('fc2'))
+        return None
     fc2 = AccessFc2()
-    movie = [f for f in fc2.search(word)]
-    return render_template('fc2List.html', movie = movie)
+    return fc2.get_movies(id)
 
 @fc2.route('/<string:id>', methods = ['POST'])
 def fc2_contents(id):
-    title = request.form.get('title')
-    m_mkv = [title + "/" + m.name for m in pathlib.Path('static/movies/' + title).glob('*.mkv')]
-    m_mp4 = [title + "/" + m.name for m in pathlib.Path('static/movies/' + title).glob('*.mp4')]
-    m_tmp = []
-    m_tmp.extend(m_mkv)
-    m_tmp.extend(m_mp4)
-    html = ""
-    for movie in m_tmp:
-        html += '''<video src="static/movies/{title}/{movie}"></video>'''.format(title=title, movie=movie)
-    return render_template('fc2.html', video = m_tmp)
+    id: str = request.form.get('id')
+    print(id)
+    result: dict = post_fc2_contents(str(id))
+    if result is None:
+        return redirect(url_for('fc2.fc2_route'))
+    return render_template('fc2.html', video = result['movies'])
+
+@fc2.route('/api/contents', methods = ['POST'])
+def fc2_contents_api():
+    id: str = request.form.get('id')
+    result: list = post_fc2_contents(str(id))
+    print(id)
+    if result is None:
+        return abort(400, 'Parameters: id \n Message: No keywords.')
+    result['movies'] = ['http://192.168.11.74:5005/static/movies/' + m for m in result['movies']]
+    return jsonify({'result': result})
+

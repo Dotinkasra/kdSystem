@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, abort, jsonify
 from modules.access_manga import AccessManga
-import pathlib
+from modules.module import BasicModules
 from natsort import natsorted
 
 manga = Blueprint('manga', __name__, url_prefix='/manga')
@@ -11,26 +11,60 @@ def manag_route():
     manga = [m for m in am.fetch()]
     return render_template('mangaList.html', manga = manga)
 
+
+def get_manga_search(word: str) -> list:
+    print(word)
+    if BasicModules.is_empty_or_null(word):
+        return None
+    am = AccessManga()
+    return am.search(word)
+
 @manga.route('/search', methods = ['GET'])
 def manga_search():
-    word = request.args.get('word')
-    if word is None or len(word) == 0 or not word:
-        print("false")
+    result = get_manga_search(request.args.get('word'))
+    if result is None:
         return redirect(url_for('manga.manag_route'))
+    return render_template('mangaList.html', manga = result)
+
+@manga.route('/api/search', methods = ['POST'])
+def manga_search_api():
+    result = get_manga_search(request.form.get('word'))
+    if result is None:
+        return abort(400, 'Parameters: word \n Message: No keywords.')
+    res_data: list = []
+    for r in result:
+        res_data.append(
+            {
+                'id': r[0],
+                'name': r[1],
+                'artists': r[2],
+                'series': r[3],
+                'original': r[4]
+            }
+        )
+    return jsonify({'result': res_data})
+
+
+def post_manga_contents(id: str) -> dict:
+    if BasicModules.is_empty_or_null(id):
+        return None
     am = AccessManga()
-    manga = [m for m in am.search(word)]
-    return render_template('mangaList.html', manga = manga)
+    return am.get_images(id)
 
 @manga.route('/<string:name>', methods = ['POST'])
 def manga_contents(name):
-    title = request.form.get('title')
-    p_png = [p.name for p in pathlib.Path('static/images/' + title).glob('*.png')]
-    p_jpg = [p.name for p in pathlib.Path('static/images/' + title).glob('*.jpg')]
-    p_jpeg = [p.name for p in pathlib.Path('static/images/' + title).glob('*.jpeg')]
-    p_webp = [p.name for p in pathlib.Path('static/images/' + title).glob('*.webp')]
-    p_tmp = []
-    p_tmp.extend(p_png)
-    p_tmp.extend(p_jpg)
-    p_tmp.extend(p_jpeg)
-    p_tmp.extend(p_webp)
-    return render_template('manga.html', title = title, files = ','.join(natsorted(p_tmp)), count = len(p_tmp))
+    id: str = request.form.get('id')
+    result: dict = post_manga_contents(id)
+    print(result)
+    if result is None:
+        return redirect(url_for('manga.manag_route'))
+    return render_template('manga.html', title = result['title'], files = ','.join(natsorted(result['images'])), count = len(result['images']))
+
+@manga.route('/api/contents', methods = ['POST'])
+def manga_contents_api():
+    id = request.form.get('id')
+    result: dict = post_manga_contents(id)
+    if result is None:
+        return abort(400, 'Parameters: word \n Message: No keywords.')
+    result['images']= natsorted(result['images'])
+    return jsonify({'result': result})

@@ -1,4 +1,5 @@
-import sqlite3
+import sqlite3, pathlib
+from modules.module import BasicModules
 
 class AccessManga():
     def __init__(self) -> None:
@@ -13,12 +14,12 @@ class AccessManga():
 
     def insert(self, name: str, artists: str, series: str, original: str):
         self.connect()
-        if self.isEmptyOrSpace(name):
+        if BasicModules.is_empty_or_null(name):
             return
 
-        artists = None if self.isEmptyOrSpace(artists) else artists
-        series = None if self.isEmptyOrSpace(series) else series
-        original = None if self.isEmptyOrSpace(original) else original
+        artists = None if BasicModules.is_empty_or_null(artists) else artists
+        series = None if BasicModules.is_empty_or_null(series) else series
+        original = None if BasicModules.is_empty_or_null(original) else original
         print(f'{name}')
         try:
             result = self.cur.execute(
@@ -40,15 +41,31 @@ class AccessManga():
         return result
 
     def search(self, keyword: str) -> list:
+        print(keyword)
         if not keyword:
             return []
         self.connect()
         self.cur.execute("SELECT * FROM manga WHERE ifnull(name,'') || ifnull(artists,'') || ifnull(series,'') || ifnull(original,'') LIKE ?", ('%' + keyword + '%',))
         result = self.cur.fetchall()
         self.close()
-        return result
+        return [m for m in result]
 
-    def isEmptyOrSpace(self, s: str) -> bool:
-        if (not type(s) is str) or (s is None) or (len(s) == 0) or (s == ''):
-            return True
-        return False
+    def get_images(self, id: str) -> dict:
+        if not id:
+            return []
+        self.connect()
+        self.cur.execute("SELECT * FROM manga WHERE id = ?", (id,))
+        result = self.cur.fetchall()
+        self.close()
+        title = result[0][1]
+        print(result)
+        p_png = [p.name for p in pathlib.Path('static/images/' + title).glob('*.png')]
+        p_jpg = [p.name for p in pathlib.Path('static/images/' + title).glob('*.jpg')]
+        p_jpeg = [p.name for p in pathlib.Path('static/images/' + title).glob('*.jpeg')]
+        p_webp = [p.name for p in pathlib.Path('static/images/' + title).glob('*.webp')]
+        p_tmp = []
+        p_tmp.extend(p_png)
+        p_tmp.extend(p_jpg)
+        p_tmp.extend(p_jpeg)
+        p_tmp.extend(p_webp)
+        return {'title': title, 'images': p_tmp}

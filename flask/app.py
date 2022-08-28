@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 from api import api
 app.register_blueprint(api)
