@@ -51,11 +51,12 @@ def post_fc2_contents(id: str):
     fc2 = AccessFc2()
     return fc2.get_movies(id)
 
-@fc2.route('/<string:id>', methods = ['POST'])
+@fc2.route('/<string:id>', methods = ['GET', 'POST'])
 def fc2_contents(id):
-    id: str = request.form.get('id')
-    print(id)
-    result: dict = post_fc2_contents(str(id))
+    form_id: str = request.form.get('id')
+    if BasicModules.is_empty_or_null(form_id):
+        form_id = id
+    result: dict = post_fc2_contents(str(form_id))
     if result is None:
         return redirect(url_for('fc2.fc2_route'))
     return render_template('fc2.html', video = result['movies'])
