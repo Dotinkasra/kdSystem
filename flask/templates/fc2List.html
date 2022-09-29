@@ -4,39 +4,65 @@
     index
 {% endblock %}
 
+
+
 {% block content %}
-    <div class="wrapper">
-        <div class="search-area">
-            <form action="/fc2/search" method = "GET">
-                <input type="text" id="search-text" placeholder="検索ワードを入力" name="word">
-                <button type="submit" >検索</button>
-            </form>
+    <div class="container-md">
+    
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="search-area">
+                    <form action="/fc2/search" method="GET" id="search_form">
+                        <div class="input-group mb-3">
+                            <button type="button" class="btn btn-outline-secondary" onClick="location.href='/fc2'">リセット</button>
+                            <input type="text" class="form-control" id="search-text" placeholder="検索ワードを入力" name="word">
+                            <button type="submit" class="btn btn-outline-secondary" id="submit_btn">検索</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <table class="table">
-            <thead class="table-dark">
-                <tr>
-                    <th scope="col">タイトル</th>
-                    <th scope="col">星</th>
-                </tr>
-            </thead>
-            <tbody class="target-area">
+        <div class="row">
+            <div class="col table-responsive">
+                <table class="table table-sm table-bordered border-secondary" id="result">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col-md-6">タイトル</th>
+                            <th scope="col-md-1">星</th>
+                        </tr>
+                    </thead>
+                    <tbody class="target-area">
 
-                {% for i in movie %}
-                <tr>
-                    <th scope="row">
-                        <form action="{{ url_for('fc2.fc2_contents', id = i[0]) }}" method = "POST">
-                            <button class="btn btn-outline-danger" type="submit" name="title" value="{{ i[1] }}">{{ i[2] }}</button>
-                        </form>
-                    </th>
-                    <td>
-                        ★1
-                    </td>
-                </tr>
-                {% endfor %}
-                
-            </tbody>
-        </table>
+                        {% for i in movie %}
+                        <tr>
+                            <th scope="row">
+                                <form action="{{ url_for('fc2.fc2_contents', id = i[0]) }}" method = "POST">
+                                    <button class="btn btn-outline-danger text-start" type="submit" name="id" value="{{ i[0] }}">{{ i[2] }}</button>
+                                </form>
+                            </th>
+
+                            <td class="text-center">
+                                ★1
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-{% endblock %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="{{ url_for('static', filename='js/list-search.js') }}"></script>
+    <script>
+        $('#search-text').keydown(function(event){
+            const key = event.key
+            if (key === 'Enter') {
+                $('#search_form').submit()
+            }
+        })
+    </script>
 
+{% endblock %}

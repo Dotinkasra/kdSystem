@@ -5,29 +5,17 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container-md">
-
-      <div class="row">
+    <div class="container">
         <h1>
             ファイルをアップロード
         </h1>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6">
-
-          <form method = post enctype = multipart/form-data id='waifu2x'>
-            <div class="input-group mb-3">
-              <input class="form-control" type="file" id="formFile" name = file>
-              <button value = Upload class="btn btn-danger disabled" id="send" aria-disabled=true>送信</button>
-            </div>
-          </form>
-          
+        <div class="mb-3">
+            <form method = post enctype = multipart/form-data id='waifu2x'>
+                    <input class="form-control" type="file" id="formFile" name = file>
+                    <button value = Upload class="btn btn-danger mb-3 disabled" id="send" aria-disabled=true>送信</button>
+            </form>
         </div>
-      </div>
-
     </div>
-
     <script>
         $(function() {
             $('#send').on('click', function() {
