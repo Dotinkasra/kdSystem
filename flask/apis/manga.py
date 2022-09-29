@@ -1,3 +1,4 @@
+from tokenize import group
 from flask import Blueprint, render_template, request, redirect, url_for, abort, jsonify
 from modules.access_manga import AccessManga
 from modules.module import BasicModules
@@ -9,22 +10,56 @@ manga = Blueprint('manga', __name__, url_prefix='/manga')
 def manag_route():
     am = AccessManga()
     manga = [m for m in am.fetch()]
-    return render_template('mangaList.html', manga = manga)
+    tags = am.get_tag()
+    return render_template('mangaList.html', manga = manga, tags = tags)
 
 
-def get_manga_search(word: str) -> list:
-    print(word)
-    if BasicModules.is_empty_or_null(word):
-        return None
+def get_manga_search(
+    **args
+) -> list:
     am = AccessManga()
-    return am.search(word)
+    return am.search(**args)
 
 @manga.route('/search', methods = ['GET'])
 def manga_search():
-    result = get_manga_search(request.args.get('word'))
+    keyword = request.args.get('word')
+
+    result = get_manga_search(keyword = keyword)
+
+    am = AccessManga()
+    tags = am.get_tag()
+
     if result is None:
         return redirect(url_for('manga.manag_route'))
-    return render_template('mangaList.html', manga = result)
+    return render_template('mangaList.html', manga = result, tags = tags)
+
+@manga.route('/search', methods = ['POST'])
+def manga_extream_search():
+    title = request.form.get('title')
+    artists = request.form.get('artists')
+    original = request.form.get('original')
+    form_tags = request.form.get('tags')
+    series = request.form.get('series')
+
+    if form_tags is not None:
+        form_tags = form_tags.split(",")
+        form_tags = list(filter(lambda t: not t == '', form_tags))
+        form_tags = None if len(form_tags) == 0 else form_tags
+
+    am = AccessManga()
+    tags = am.get_tag()
+    print("title", title, "aritsts", artists, "original", original, "tag", form_tags, "series", series)
+
+    result = get_manga_search(
+        title = None if title == '' else title,
+        artists = None if artists == '' else artists,
+        original = None if original == '' else original,
+        series = None if series == '' else series,
+        tags = None if form_tags == '' else form_tags
+    )
+    if result is None:
+        return redirect(url_for('manga.manag_route'))
+    return render_template('mangaList.html', manga = result, tags = tags)
 
 @manga.route('/api/search', methods = ['POST'])
 def manga_search_api():
@@ -51,14 +86,15 @@ def post_manga_contents(id: str) -> dict:
     am = AccessManga()
     return am.get_images(id)
 
-@manga.route('/<string:name>', methods = ['POST'])
+@manga.route('/<string:name>', methods = ['GET', 'POST'])
 def manga_contents(name):
     id: str = request.form.get('id')
+    if BasicModules.is_empty_or_null(id):
+        id = name
     result: dict = post_manga_contents(id)
-    print(result)
     if result is None:
         return redirect(url_for('manga.manag_route'))
-    return render_template('manga.html', title = result['title'], files = ','.join(natsorted(result['images'])), count = len(result['images']))
+    return render_template('manga.html', title = result['title'], files = ','.join(natsorted(result['images'])), count = len(result['images']), series = result['series'])
 
 @manga.route('/api/contents', methods = ['POST'])
 def manga_contents_api():
@@ -66,5 +102,26 @@ def manga_contents_api():
     result: dict = post_manga_contents(id)
     if result is None:
         return abort(400, 'Parameters: word \n Message: No keywords.')
-    result['images']= natsorted(result['images'])
+    result['images'] = natsorted(result['images'])
+    result['link'] = "http://192.168.11.74:5005/manga/" + str(id)
     return jsonify({'result': result})
+
+def add_manga_contents(name: str, artists: str = None, series: str = None, original: str = None) -> bool:
+    am = AccessManga()
+    result = am.insert(name, artists, series, original)
+    if result is None:
+        return False
+    return True
+
+@manga.route('/api/add', methods = ['POST'])
+def add_manga_contents_api():
+    name = request.form.get('name')
+    if BasicModules.is_empty_or_null(name):
+        abort(400, 'Parameters: name \n Message: No keywords.')
+    artists = request.form.get('artists')
+    series = request.form.get('series')
+    original = request.form.get('original')
+    result = add_manga_contents(name, artists, series, original)
+    if result:
+        return jsonify({'result': 'succese'})
+    return abort(500, 'Error')

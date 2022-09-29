@@ -12,13 +12,49 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <div class="search-area">
+
                     <form action="/manga/search" method="GET" id="search_form">
                         <div class="input-group mb-3">
                             <button type="button" class="btn btn-outline-secondary" onClick="location.href='/manga'">リセット</button>
                             <input type="text" class="form-control" id="search-text" placeholder="検索ワードを入力" name="word">
                             <button type="submit" class="btn btn-outline-secondary" id="submit_btn">検索</button>
+                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">詳細</button>
                         </div>
                     </form>
+
+                    <div class="collapse" id="collapseExample">
+                        <form action="/manga/search" method="POST" id="search_form">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">タイトル</span>
+                                <input type="text" class="form-control" id="search-text" name="title">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">作者名</span>
+                                <input type="text" class="form-control" id="search-text" name="artists">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">シリーズ</span>
+                                <input type="text" class="form-control" id="search-text" name="series">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">元ネタ</span>
+                                <input type="text" class="form-control" id="search-text" name="original">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">タグ</span>
+                                <input type="text" class="form-control" id="search-text" name="tags">
+                            </div>
+              
+
+                            <button type="submit" class="btn btn-outline-secondary" id="submit_btn">詳細検索</button>
+
+                        </form>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -38,11 +74,24 @@
 
                         {% for i in manga %}
                         <tr>
-                            <th scope="row">
+                            <td scope="row">
                                 <form action="{{ url_for('manga.manga_contents', name = i[0]) }}" method = "POST">
-                                    <button class="btn btn-outline-primary text-start" type="submit" name="title" value="{{ i[1] }}">{{ i[1] }}</button>
+                                    <button class="btn btn-outline-primary text-start" type="submit" name="id" value="{{ i[0] }}">{{ i[1] }}</button>
                                 </form>
-                            </th>
+                                {% if i[5] %}
+                                    {% set tags = i[5].split(',') %}
+                                    {% for t in tags %}
+
+                                    <form action="/manga/search" method="POST" id="tag_form" style="display: inline;">
+                                        <button type="submit" name='tags' class="badge bg-success" value="{{ t }}">
+                                            {{ t }}
+                                        </button>
+                                    </form>
+
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+
                             <td class="text-center">
                                 <a href="/manga/search?word={{ i[2] or '' }}">
                                     {{ i[2] or '' }}
@@ -57,6 +106,7 @@
                                 </a>                
                             </td>
                         </tr>
+
                         {% endfor %}
                         
                     </tbody>

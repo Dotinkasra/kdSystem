@@ -34,8 +34,29 @@
             
             /**長すぎるからh1の方のタイトル改行したいって時var/コメントアウト解除して編集**/
             //$("h1").html("サンプル<br>サンプル");
+
+            $(".s_button").on("click" , function() {
+                console.log("click!!!!")
+                const form = document.createElement('form');
+                const request = document.createElement('input');
+            
+                form.method = 'post';
+                form.action = '/manga/search';
+
+                request.type = 'hidden';
+                request.name = 'series';
+                request.value = {{series|tojson}};
+                console.log(request.value)
+            
+                form.appendChild(request);
+                document.body.appendChild(form);
+                form.submit();
+            });
              
         });
+
+
+
         $(function disableScroll(event) {
             event.preventDefault();
         });
@@ -67,6 +88,7 @@
                 <p>
                     <input type="button" value="もう一度読む" class="button b_button">
                     <input type="button" value="サイトへ戻る" class="button o_button orange">
+                    <input type="button" value="シリーズを読む" class="button s_button red">
                 </p>
             </div>
         </div>
