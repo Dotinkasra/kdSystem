@@ -30,8 +30,7 @@ class Erocool():
     def do(self, url: str) -> str:
         save_dir = "./static/waifu2x/"
         cmd = [
-            "./modules/bin/erocoolAPI",
-            url,
+            "./modules/bin/erocoolAPI", url,
             "-o", save_dir
         ]
         try:
@@ -46,7 +45,7 @@ class Erocool():
                 encode_file_name = encode_file_name[:200]
 
             zip_path = (f"{save_dir}{encode_file_name}")
-            
+
             shutil.make_archive(
                 zip_path,
                 format = 'zip',
@@ -59,7 +58,7 @@ class Erocool():
         finally:
             #shutil.rmtree(stdout)
             pass
-        
+
 class YouTube():
     def do(self, url: str, audio_only: bool) -> str:
         fmt = "bestaudio" if audio_only else "bestvideo+bestaudio" 

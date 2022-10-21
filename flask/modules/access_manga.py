@@ -21,15 +21,49 @@ class AccessManga():
 
         """
 
-    def close(self):
+    def __close(self):
         self.conn.close()
 
-    def connect(self):
+    def __connect(self):
         self.conn = sqlite3.connect(self.dbname)
         self.cur = self.conn.cursor()
 
-    def insert(self, name: str, artists: str, series: str, original: str):
-        self.connect()
+    def __select(self, sql: str, parameta: tuple = None) -> list:
+        self.__connect()
+        if parameta:
+            self.cur.execute(sql, parameta)
+        else:
+            self.cur.execute(sql)
+        result = self.cur.fetchall()
+        self.__close()
+        return result
+
+    def __insert(self, sql: str, parameta: tuple = None, table_name: str = None) -> None|list:
+        self.__connect()
+        if parameta:
+            self.cur.execute(sql, parameta)
+        else:
+            self.cur.execute(sql)
+        self.conn.commit()
+
+        result = None
+        if table_name:
+            self.cur.execute(f"SELECT * FROM {table_name} WHERE rowid = last_insert_rowid();")
+            result = self.cur.fetchall()
+        self.__close()
+        return result
+
+    def __delete(self, sql: str, parameta: tuple = None):
+        self.__connect()
+        if parameta:
+            self.cur.execute(sql, parameta)
+        else:
+            self.cur.execute(sql)
+        self.conn.commit()
+        self.__close()
+
+    def insert_single_manga(self, name: str, artists: str, series: str, original: str):
+        self.__connect()
         if BasicModules.is_empty_or_null(name):
             return
 
@@ -37,35 +71,69 @@ class AccessManga():
         series = None if BasicModules.is_empty_or_null(series) else series
         original = None if BasicModules.is_empty_or_null(original) else original
         print(f'{name}')
-        try:
-            result = self.cur.execute(
-                "INSERT INTO manga(name, artists, series, original) VALUES(?,?,?,?)",
-                (name, artists, series, original)
-            )
-            self.conn.commit()
-        except:
-            result = None
-        finally:
-            self.close()
-            return result
 
-    def fetch(self) -> list:
-        self.connect()
-        self.cur.execute(
-            f"{self.main_sql} GROUP BY manga.name"
+        self.__insert(
+            "INSERT INTO manga(name, artists, series, original) VALUES(?,?,?,?)",
+            (name, artists, series, original)
         )
-        result = self.cur.fetchall()
-        self.close()
-        return result
 
-    def get_tag(self) -> list:
-        self.connect()
-        self.cur.execute("SELECT * FROM tag")
-        result = self.cur.fetchall()
-        self.close()
-        return result
+    def fetch_manga_all(self) -> list:
+        return self.__select(f"{self.main_sql} GROUP BY manga.name")
 
-    def search(
+    def get_tagid(self, tag_name: str) -> int:
+        result = self.__select("SELECT id FROM tag WHERE name = ?", (tag_name,))
+        return int(result[0])
+
+    def get_tag_granted_in_manga(self, manga_id: str = None) -> list:
+        return self.__select(
+            "SELECT tag.* FROM tag_manga LEFT JOIN tag ON tag_manga.tag_id = tag.id WHERE tag_manga.manga_id = ?",
+             (manga_id, )
+        )
+
+    def get_tag_all(self) -> list:
+        return self.__select("SELECT * FROM tag")    
+    
+    def set_tag_to_manga(self, manga_id: str, tag_list: list[str]):
+        # 漫画に付与されたタグ一覧のリスト
+        current_tag = set([int(i[0]) for i in self.get_tag_granted_in_manga(manga_id = manga_id)])
+        # 受け取ったタグ一覧のリスト
+        tag_list_set = set([int(i) for i in tag_list])
+
+        # 差集合
+        # 受け取ったタグ - 現在のタグ = まだ付けられていない新しいタグ
+        new_tag = tag_list_set - current_tag
+        # 現在のタグ - 受け取ったタグ = チェックが外された削除するタグ
+        delete_tag = current_tag - tag_list_set
+
+        print("current_tag", list(current_tag), "tag_list", list(tag_list_set))
+        print("new_tag", list(new_tag), "delete_tag", list(delete_tag))
+
+        for tag in list(new_tag):
+            self.__insert(
+                "INSERT INTO tag_manga VALUES(?,?)",
+                (tag, manga_id)                
+            )
+        for tag in list(delete_tag):
+            self.__delete(
+                "DELETE FROM tag_manga WHERE tag_id = ? AND manga_id = ?",
+                (tag, manga_id)
+            )
+    
+    def add_new_tag(self, tag_name: str):
+        if BasicModules.is_empty_or_null(tag_name):
+            return
+
+        exist_tags = [i[1] for i in self.get_tag_all()]
+        if tag_name in exist_tags:
+            return
+
+        return self.__insert(
+            sql = "INSERT INTO tag(name) VALUES(?)",
+            parameta = (tag_name, ),
+            table_name = 'tag'
+        )
+        
+    def search_manga(
         self,
         keyword: str = None,
         title: str = None,
@@ -74,12 +142,15 @@ class AccessManga():
         original: str = None,
         tags: list[str] = None
     ) -> list:
+        # キーワードがなく、他の詳細検索のパラメタもない場合
         if keyword is None and not any((title, artists, series, original, tags)):
             return []
 
-        self.connect()
         result = []
+
         sql = self.main_sql
+
+        # キーワードが存在する場合は、全体をあいまい検索
         if keyword is not None:
             sql += f"""
 
@@ -92,8 +163,7 @@ class AccessManga():
                 """
             param = (f'%{keyword}%',)
             print(sql)
-            self.cur.execute(sql, param)
-            r = self.cur.fetchall()
+            r = self.__select(sql, param)
             if not (r is None and len(r) == 0):
                 result.extend(r)
             return result
@@ -142,35 +212,24 @@ class AccessManga():
                     
         print(sql)
         print(param)
-        self.cur.execute(sql, tuple(param))
-        r = self.cur.fetchall()
+        r = self.__select(sql, tuple(param))
         if not (r is None and len(r) == 0):
             result.extend(r)
 
-        #self.cur.execute("SELECT * FROM manga WHERE ifnull(name,'') || ifnull(artists,'') || ifnull(series,'') || ifnull(original,'') LIKE ?", ('%' + keyword + '%',))
-        #result = self.cur.fetchall()
-        self.close()
         return [m for m in result]
 
     def get_images(self, id: str) -> dict:
-        if not id:
-            return []
-        self.connect()
-        self.cur.execute("SELECT * FROM manga WHERE id = ?", (id,))
-        result = self.cur.fetchall()
-        self.close()
+        if not id: return []
+
+        result = self.__select("SELECT * FROM manga WHERE id = ?", (id,))
+
         title = result[0][1]
         series = result[0][3]
         print(result)
-        p_png = [p.name for p in pathlib.Path('static/images/' + title).glob('*.png')]
-        p_jpg = [p.name for p in pathlib.Path('static/images/' + title).glob('*.jpg')]
-        p_jpeg = [p.name for p in pathlib.Path('static/images/' + title).glob('*.jpeg')]
-        p_webp = [p.name for p in pathlib.Path('static/images/' + title).glob('*.webp')]
-        p_avif = [p.name for p in pathlib.Path('static/images/' + title).glob('*.avif')]
-        p_tmp = []
-        p_tmp.extend(p_png)
-        p_tmp.extend(p_jpg)
-        p_tmp.extend(p_jpeg)
-        p_tmp.extend(p_webp)
-        p_tmp.extend(p_avif)
-        return {'title': title, 'images': p_tmp, 'series': series}
+        target_ext_list = ['*.png', '*.jpg', '*.jpeg', '*.webp', '*.avif']
+        images = []
+        for ext in target_ext_list:
+            images.extend(
+                [f.name for f in pathlib.Path(f'static/images/{title}').glob(ext)]
+            )
+        return {'title': title, 'images': images, 'series': series}

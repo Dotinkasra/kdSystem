@@ -1,5 +1,5 @@
 from tokenize import group
-from flask import Blueprint, render_template, request, redirect, url_for, abort, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, abort, jsonify, Response
 from modules.access_manga import AccessManga
 from modules.module import BasicModules
 from natsort import natsorted
@@ -9,8 +9,8 @@ manga = Blueprint('manga', __name__, url_prefix='/manga')
 @manga.route('/')
 def manag_route():
     am = AccessManga()
-    manga = [m for m in am.fetch()]
-    tags = am.get_tag()
+    manga = [m for m in am.fetch_manga_all()]
+    tags = am.get_tag_all()
     return render_template('mangaList.html', manga = manga, tags = tags)
 
 
@@ -18,7 +18,7 @@ def get_manga_search(
     **args
 ) -> list:
     am = AccessManga()
-    return am.search(**args)
+    return am.search_manga(**args)
 
 @manga.route('/search', methods = ['GET'])
 def manga_search():
@@ -27,7 +27,7 @@ def manga_search():
     result = get_manga_search(keyword = keyword)
 
     am = AccessManga()
-    tags = am.get_tag()
+    tags = am.get_tag_all()
 
     if result is None:
         return redirect(url_for('manga.manag_route'))
@@ -38,8 +38,9 @@ def manga_extream_search():
     title = request.form.get('title')
     artists = request.form.get('artists')
     original = request.form.get('original')
-    form_tags = request.form.get('tags')
+    form_tags = request.form.get('tag')
     series = request.form.get('series')
+    print(title, artists, original, form_tags, series)
 
     if form_tags is not None:
         form_tags = form_tags.split(",")
@@ -47,7 +48,7 @@ def manga_extream_search():
         form_tags = None if len(form_tags) == 0 else form_tags
 
     am = AccessManga()
-    tags = am.get_tag()
+    tags = am.get_tag_all()
     print("title", title, "aritsts", artists, "original", original, "tag", form_tags, "series", series)
 
     result = get_manga_search(
@@ -79,6 +80,23 @@ def manga_search_api():
         )
     return jsonify({'result': res_data})
 
+@manga.route('/tag', methods = ['POST'])
+def add_tag():
+    tag = request.form.getlist('tag')
+    manga_id = request.form.get('manga_id')
+    new_tag = request.form.getlist('new_tag')
+    am = AccessManga()
+    new_tag_ids = []
+    for t in new_tag:
+        if BasicModules.is_empty_or_null(t):
+            continue
+        new_tag_ids.append(am.add_new_tag(t)[0][0])
+
+    print("tag共", manga_id, new_tag, tag, tag + new_tag_ids)
+    
+    am.set_tag_to_manga(manga_id = manga_id, tag_list = tag + new_tag_ids)
+    return redirect(url_for('manga.manag_route'))
+
 
 def post_manga_contents(id: str) -> dict:
     if BasicModules.is_empty_or_null(id):
@@ -108,7 +126,7 @@ def manga_contents_api():
 
 def add_manga_contents(name: str, artists: str = None, series: str = None, original: str = None) -> bool:
     am = AccessManga()
-    result = am.insert(name, artists, series, original)
+    result = am.insert_single_manga(name, artists, series, original)
     if result is None:
         return False
     return True
