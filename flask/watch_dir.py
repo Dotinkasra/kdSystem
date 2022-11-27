@@ -10,6 +10,8 @@ from watchdog.events import RegexMatchingEventHandler
 
 import PySimpleGUI as sg
 import tkinter
+import tkfilebrowser
+
 class ImagesWatchHandler(RegexMatchingEventHandler):
     def __init__(self, regexes, filename) -> None:
         super().__init__(regexes= regexes)
@@ -114,6 +116,28 @@ class SendButton(tkinter.Button):
 
         BasicModules.reset_textbox(i_artists, i_series, i_original)
         filename.set('')
+
+class newWindowButton(tkinter.Button):
+    def __init__(self, root):
+        super().__init__(
+            root,
+            text="Finderからファイルを登録する",
+            command=self.new_window
+        )
+        self.pack()
+
+    def new_window(self):
+        self.newWindow = tkinter.Toplevel(root)
+        select_dir_btn = tkinter.Button(self.newWindow,
+            text = "フォルダを選択する",
+            command = self.select_dir
+        )
+        select_dir_btn.pack()
+
+    def select_dir(self):
+        target_dir = tkfilebrowser.askopendirnames()
+        print(target_dir)
+
         
 class BasicModules():
     @classmethod
@@ -148,6 +172,8 @@ if __name__ == "__main__":
     i_original.pack()
 
     send = SendButton(root)
+
+    b_new_window = newWindowButton(root)
     
     
     root.mainloop()

@@ -8,3 +8,6 @@ flask/modules/realesrgan-ncnn-vulkan
 *.pyc
 *.png
 *.wav
+flask/.python-version
+flask/modules/bin/*
+flask/static/server
