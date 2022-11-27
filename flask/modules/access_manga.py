@@ -1,6 +1,7 @@
 import sqlite3, pathlib
 from unicodedata import name
 from modules.module import BasicModules
+from modules.module import DBaccess
 
 class AccessManga():
     def __init__(self) -> None:
@@ -20,50 +21,10 @@ class AccessManga():
                 tag_manga.tag_id = tag.id
 
         """
-
-    def __close(self):
-        self.conn.close()
-
-    def __connect(self):
-        self.conn = sqlite3.connect(self.dbname)
-        self.cur = self.conn.cursor()
-
-    def __select(self, sql: str, parameta: tuple = None) -> list:
-        self.__connect()
-        if parameta:
-            self.cur.execute(sql, parameta)
-        else:
-            self.cur.execute(sql)
-        result = self.cur.fetchall()
-        self.__close()
-        return result
-
-    def __insert(self, sql: str, parameta: tuple = None, table_name: str = None) -> None|list:
-        self.__connect()
-        if parameta:
-            self.cur.execute(sql, parameta)
-        else:
-            self.cur.execute(sql)
-        self.conn.commit()
-
-        result = None
-        if table_name:
-            self.cur.execute(f"SELECT * FROM {table_name} WHERE rowid = last_insert_rowid();")
-            result = self.cur.fetchall()
-        self.__close()
-        return result
-
-    def __delete(self, sql: str, parameta: tuple = None):
-        self.__connect()
-        if parameta:
-            self.cur.execute(sql, parameta)
-        else:
-            self.cur.execute(sql)
-        self.conn.commit()
-        self.__close()
+        self.dbaccess = DBaccess(self.dbname)
 
     def insert_single_manga(self, name: str, artists: str, series: str, original: str):
-        self.__connect()
+        self.dbaccess.connect()
         if BasicModules.is_empty_or_null(name):
             return
 
@@ -72,26 +33,26 @@ class AccessManga():
         original = None if BasicModules.is_empty_or_null(original) else original
         print(f'{name}')
 
-        self.__insert(
+        self.dbaccess.insert(
             "INSERT INTO manga(name, artists, series, original) VALUES(?,?,?,?)",
             (name, artists, series, original)
         )
 
     def fetch_manga_all(self) -> list:
-        return self.__select(f"{self.main_sql} GROUP BY manga.name")
+        return self.dbaccess.select(f"{self.main_sql} GROUP BY manga.name")
 
     def get_tagid(self, tag_name: str) -> int:
-        result = self.__select("SELECT id FROM tag WHERE name = ?", (tag_name,))
+        result = self.dbaccess.select("SELECT id FROM tag WHERE name = ?", (tag_name,))
         return int(result[0])
 
     def get_tag_granted_in_manga(self, manga_id: str = None) -> list:
-        return self.__select(
+        return self.dbaccess.select(
             "SELECT tag.* FROM tag_manga LEFT JOIN tag ON tag_manga.tag_id = tag.id WHERE tag_manga.manga_id = ?",
              (manga_id, )
         )
 
     def get_tag_all(self) -> list:
-        return self.__select("SELECT * FROM tag")    
+        return self.dbaccess.select("SELECT * FROM tag")    
     
     def set_tag_to_manga(self, manga_id: str, tag_list: list[str]):
         # 漫画に付与されたタグ一覧のリスト
@@ -109,12 +70,12 @@ class AccessManga():
         print("new_tag", list(new_tag), "delete_tag", list(delete_tag))
 
         for tag in list(new_tag):
-            self.__insert(
+            self.dbaccess.insert(
                 "INSERT INTO tag_manga VALUES(?,?)",
                 (tag, manga_id)                
             )
         for tag in list(delete_tag):
-            self.__delete(
+            self.dbaccess.delete(
                 "DELETE FROM tag_manga WHERE tag_id = ? AND manga_id = ?",
                 (tag, manga_id)
             )
@@ -127,7 +88,7 @@ class AccessManga():
         if tag_name in exist_tags:
             return
 
-        return self.__insert(
+        return self.dbaccess.insert(
             sql = "INSERT INTO tag(name) VALUES(?)",
             parameta = (tag_name, ),
             table_name = 'tag'
@@ -163,7 +124,7 @@ class AccessManga():
                 """
             param = (f'%{keyword}%',)
             print(sql)
-            r = self.__select(sql, param)
+            r = self.dbaccess.select(sql, param)
             if not (r is None and len(r) == 0):
                 result.extend(r)
             return result
@@ -212,7 +173,7 @@ class AccessManga():
                     
         print(sql)
         print(param)
-        r = self.__select(sql, tuple(param))
+        r = self.dbaccess.select(sql, tuple(param))
         if not (r is None and len(r) == 0):
             result.extend(r)
 
@@ -221,7 +182,7 @@ class AccessManga():
     def get_images(self, id: str) -> dict:
         if not id: return []
 
-        result = self.__select("SELECT * FROM manga WHERE id = ?", (id,))
+        result = self.dbaccess.select("SELECT * FROM manga WHERE id = ?", (id,))
 
         title = result[0][1]
         series = result[0][3]

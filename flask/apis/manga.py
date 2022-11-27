@@ -13,7 +13,6 @@ def manag_route():
     tags = am.get_tag_all()
     return render_template('mangaList.html', manga = manga, tags = tags)
 
-
 def get_manga_search(
     **args
 ) -> list:
