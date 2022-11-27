@@ -9,7 +9,7 @@
   <div class="container">
   {% for v in video %}
     <div class="row">
-      <div class="col-lg-12 col-md-12">
+      <div class="col-lg-12 col-md-12 ratio ratio-16x9">
         <video crossorigin id="myVideo" width="640" height="480" controls preload="auto" playsinline src="{{ url_for('static', filename='movies/' + v) }}"></video>
       </div>
     </div>

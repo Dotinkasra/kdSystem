@@ -4,56 +4,87 @@
     index
 {% endblock %}
 
-
-
 {% block content %}
-    <div class="container-md">
+<div class="container-md">
     
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <div class="search-area">
-                    <form action="/fc2/search" method="GET" id="search_form">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="search-area">
+
+                <form action="/fc2/search" method="GET" id="search_form">
+                    <div class="input-group mb-3">
+                        <button type="button" class="btn btn-outline-secondary" onClick="location.href='/fc2'">リセット</button>
+                        <input type="text" class="form-control" id="search-text" placeholder="検索ワードを入力" name="word">
+                        <button type="submit" class="btn btn-outline-secondary" id="submit_btn">検索</button>
+                        <button class="btn btn-danger" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">詳細</button>
+                    </div>
+                </form>
+
+                <div class="collapse" id="collapseExample">
+                    <form action="/fc2/search" method="POST" id="search_form">
                         <div class="input-group mb-3">
-                            <button type="button" class="btn btn-outline-secondary" onClick="location.href='/fc2'">リセット</button>
-                            <input type="text" class="form-control" id="search-text" placeholder="検索ワードを入力" name="word">
-                            <button type="submit" class="btn btn-outline-secondary" id="submit_btn">検索</button>
+                            <span class="input-group-text" id="basic-addon1">タイトル</span>
+                            <input type="text" class="form-control" id="search-text" name="title">
                         </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">作者名</span>
+                            <input type="text" class="form-control" id="search-text" name="artists">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">ID</span>
+                            <input type="text" class="form-control" id="search-text" name="series">
+                        </div>
+
+                        <button type="submit" class="btn btn-outline-secondary" id="submit_btn">詳細検索</button>
+
                     </form>
                 </div>
+
             </div>
         </div>
-
-        <div class="row">
-            <div class="col table-responsive">
-                <table class="table table-sm table-bordered border-secondary" id="result">
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col-md-6">タイトル</th>
-                            <th scope="col-md-1">星</th>
-                        </tr>
-                    </thead>
-                    <tbody class="target-area">
-
-                        {% for i in movie %}
-                        <tr>
-                            <th scope="row">
-                                <form action="{{ url_for('fc2.fc2_contents', id = i[0]) }}" method = "POST">
-                                    <button class="btn btn-outline-danger text-start" type="submit" name="id" value="{{ i[0] }}">{{ i[2] }}</button>
-                                </form>
-                            </th>
-
-                            <td class="text-center">
-                                ★1
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
+
+    <div class="row">
+        <div class="col table-responsive">
+
+            <table class="table table-sm table-bordered border-secondary" id="result">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col-md-8">タイトル</th>
+                        <th scope="col-md-2">投稿者</th>
+                        <th scope="col-md-2">レート</th>
+                    </tr>
+                </thead>
+
+                <tbody class="target-area">
+                {% for i in movie %}
+                    <tr>
+                        <td scope="row">
+                            <form action="{{ url_for('fc2.fc2_contents', id = i[0]) }}" method = "POST" style="display: inline;">
+                                <button class="btn btn-outline-danger text-start" type="submit" name="id" value="{{ i[0] }}">{{ i[2] }}</button>
+                            </form>
+ 
+                        </td>
+
+                        <td class="text-center">
+                            <a href="/fc2/search?contributor={{ i[4] or '' }}">
+                                {{ i[4] or '' }}
+                            </a>
+                        </td>
+                        <td class="text-center">     
+                            星5            
+                        </td>
+                    </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
     <script src="{{ url_for('static', filename='js/list-search.js') }}"></script>
     <script>
@@ -62,7 +93,8 @@
             if (key === 'Enter') {
                 $('#search_form').submit()
             }
-        })
+        });
+
     </script>
 
 {% endblock %}

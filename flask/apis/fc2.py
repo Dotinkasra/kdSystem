@@ -10,24 +10,31 @@ def fc2_route():
     fc2 = AccessFc2()
     return render_template('fc2List.html', movie = fc2.fetch())
 
-
-def get_fc2_search(word: str):
-    if BasicModules.is_empty_or_null(word):
-        print("false")
-        return None
+def search_fc2_with_keyword(keyword: str):
     fc2 = AccessFc2()
-    return fc2.search(word)
+    return fc2.search(keyword)
+
+def search_fc2_with_contributor(contributor: str):
+    fc2 = AccessFc2()
+    return fc2.search_contributor(contributor)
 
 @fc2.route('/search', methods = ['GET'])
 def fc2_search():
-    result: list = get_fc2_search(request.args.get('word'))
-    if result is None:
-        return redirect(url_for('fc2.fc2_route'))
-    return render_template('fc2List.html', movie = result)
+    keyword = request.args.get('word')
+    print(keyword)
+    if keyword:
+        render_template('fc2List.html', movie = search_fc2_with_keyword(keyword))
+
+    contributor = request.args.get('contributor')
+    print(contributor)
+    if contributor:
+        return render_template('fc2List.html', movie = search_fc2_with_contributor(contributor))
+
+    return redirect(url_for('fc2.fc2_route'))
 
 @fc2.route('/api/search', methods = ['POST'])
 def fc2_search_api():
-    result: list = get_fc2_search(request.form.get('word'))
+    result: list = search_fc2_with_keyword(request.form.get('word'))
     if result is None:
         return abort(400, 'Parameters: word \n Message: No keywords.')
     
@@ -45,9 +52,6 @@ def fc2_search_api():
 
 
 def post_fc2_contents(id: str):
-    if BasicModules.is_empty_or_null(id):
-        print("false")
-        return None
     fc2 = AccessFc2()
     return fc2.get_movies(id)
 
